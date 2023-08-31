@@ -1,0 +1,75 @@
+# NOTE: This files purpose is to spin-up the project for testing it in CI. 
+#       Please do not understand it as recommendation for an production 
+#       docker-compose setup. For that see the README. If you have additions 
+#       to make, please add them there.
+version: '3.1'
+services:
+  humhub:
+    container_name: humhub
+    image: docker.io/mriedmann/humhub:1.13.2
+    ports:
+      - "8080:80"
+    environment:
+      HUMHUB_DB_USER: ${HUMHUB_DB_USER}
+      HUMHUB_DB_PASSWORD: ${HUMHUB_DB_PASSWORD}
+      HUMHUB_DB_HOST: 'db_humhub'
+      HUMHUB_DB_NAME: ${HUMHUB_DB_NAME}
+      HUMHUB_AUTO_INSTALL: 1
+      HUMHUB_DEBUG: "false"
+      HUMHUB_PROTO: 'https'
+      HUMHUB_HOST: 'localhost'
+
+      # Cache Config
+      HUMHUB_CACHE_EXPIRE_TIME: 3600
+      HUMHUB_CACHE_CLASS: yii\redis\Cache
+      HUMHUB_QUEUE_CLASS: humhub\modules\queue\driver\Redis
+      HUMHUB_REDIS_HOSTNAME: redis
+      HUMHUB_REDIS_PORT: 6379
+      HUMHUB_REDIS_PASSWORD: ${HUMHUB_REDIS_PASSWORD}
+    volumes:
+      - "./humhub_config:/var/www/localhost/htdocs/protected/config"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - internal
+
+  db_humhub:
+    container_name: db_humhub
+    image: linuxserver/mariadb:10.5.13
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${HUMHUB_DB_NAME}
+      MYSQL_USER: ${HUMHUB_DB_USER}
+      MYSQL_PASSWORD: ${HUMHUB_DB_PASSWORD}
+    volumes:
+      - mariadb:/config
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - internal
+
+  redis:
+    image: redis:5.0-alpine
+    #expose:
+    #  - '6379'
+#    volumes:
+#      - /srv/humhub/redis:/data
+    environment:
+      - REDIS_PASSWORD=${HUMHUB_REDIS_PASSWORD}
+      #- ALLOW_EMPTY_PASSWORD=yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    networks:
+      - internal
+
+volumes:
+  mariadb: {}
+
+networks:
+  internal:
