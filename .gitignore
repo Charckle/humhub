@@ -1,3 +1,4 @@
 *.sql
-humhub_config
-mariadb
+humhub_config/
+mariadb/
+uploads/
