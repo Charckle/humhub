@@ -25,7 +25,7 @@ services:
       HUMHUB_QUEUE_CLASS: humhub\modules\queue\driver\Redis
       HUMHUB_REDIS_HOSTNAME: redis
       HUMHUB_REDIS_PORT: 6379
-      HUMHUB_REDIS_PASSWORD: ${HUMHUB_REDIS_PASSWORD}
+      HUMHUB_REDIS_PASSWORD: $REDIS_PASSWORD}
     volumes:
       - "./humhub_config:/var/www/localhost/htdocs/protected/config"
       - "./uploads:/var/www/localhost/htdocs/uploads"
@@ -62,7 +62,7 @@ services:
 #    volumes:
 #      - /srv/humhub/redis:/data
     environment:
-      - REDIS_PASSWORD=${HUMHUB_REDIS_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       #- ALLOW_EMPTY_PASSWORD=yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
